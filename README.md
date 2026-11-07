@@ -1,7 +1,7 @@
 # 📊 Dashboard Executivo | Taranis Black
 
 <div align="center">
-  <a href="[https://seu-usuario.github.io/dashboard-taranis-black/](https://marceloscientist.github.io/dashboard-claude/)" target="_blank">
+  <a href="[https://marceloscientist.github.io/dashboard-claude/](https://marceloscientist.github.io/dashboard-claude/)" target="_blank">
     <img src="https://img.shields.io/badge/🚀_Ver_Dashboard_Ao_Vivo-Clique_Aqui-2563eb?style=for-the-badge" alt="Ver Dashboard Ao Vivo">
   </a>
   <br><br>
