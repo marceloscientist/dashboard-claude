@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Artifact - Dashboard Executivo</title>
+  <style>
+    :root{
+      --bg:#0f172a;          /* azul marinho */
+      --panel:#111c36;
+      --panel2:#0b132b;
+      --text:#e5e7eb;       /* claro */
+      --muted:#9ca3af;      /* cinza */
+      --grid:rgba(148,163,184,.22);
+      --stroke:rgba(148,163,184,.35);
+      --blue:#2563eb;       /* orçado */
+      --red:#ef4444;        /* anomalias */
+      --red2:#f87171;
+      --good:#22c55e;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius:14px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans";
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    /* Layout do artifact (janela lateral) */
+    .artifact{
+      padding:14px;
+      width: 390px;
+      max-width: 100vw;
+      margin:0;
+    }
+
+    header{
+      background: linear-gradient(180deg, rgba(37,99,235,.18), rgba(17,28,54,.0));
+      border:1px solid rgba(148,163,184,.25);
+      border-radius: var(--radius);
+      padding:12px 14px;
+      box-shadow: var(--shadow);
+    }
+    .title{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      line-height:1.15;
+    }
+    header h1{
+      margin:0;
+      font-size:16px;
+      letter-spacing:.2px;
+      font-weight:800;
+    }
+    header .sub{
+      margin:0;
+      font-size:12px;
+      color: var(--muted);
+    }
+
+    .grid{
+      margin-top:12px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .card{
+      background: radial-gradient(1200px 250px at 0% 0%, rgba(37,99,235,.08), transparent 60%),
+                  linear-gradient(180deg, rgba(17,28,54,.9), rgba(11,19,43,.85));
+      border:1px solid rgba(148,163,184,.24);
+      border-radius: var(--radius);
+      padding:12px;
+      box-shadow: var(--shadow);
+    }
+    .card h2{
+      margin:0 0 10px 0;
+      font-size:13px;
+      color: #dbeafe;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .hint{
+      font-size:11px;
+      color: var(--muted);
+      font-weight:600;
+    }
+
+    /* Badges */
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:999px;
+      padding:6px 10px;
+      font-size:11px;
+      font-weight:800;
+      letter-spacing:.2px;
+      border:1px solid rgba(239,68,68,.55);
+      background: rgba(239,68,68,.12);
+      color: var(--red2);
+      white-space:nowrap;
+    }
+    .badge-blue{
+      border-color: rgba(37,99,235,.55);
+      background: rgba(37,99,235,.12);
+      color: #93c5fd;
+    }
+
+    /* Table */
+    .twrap{
+      overflow:hidden;
+      border-radius: 12px;
+      border:1px solid rgba(148,163,184,.18);
+      background: rgba(2,6,23,.25);
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:12.5px;
+    }
+    thead th{
+      text-align:left;
+      padding:10px 10px;
+      color:#cbd5e1;
+      font-weight:900;
+      background: rgba(148,163,184,.10);
+      border-bottom:1px solid rgba(148,163,184,.16);
+    }
+    tbody td{
+      padding:9px 10px;
+      border-bottom:1px solid rgba(148,163,184,.10);
+    }
+    tbody tr:last-child td{border-bottom:none}
+    .rowname{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      font-weight:800;
+    }
+    .val{
+      font-variant-numeric: tabular-nums;
+      color:#f3f4f6;
+      font-weight:800;
+    }
+    .muted{
+      color: var(--muted);
+      font-weight:700;
+    }
+
+    /* Canvas sizing */
+    .chartbox{
+      position:relative;
+      height: 235px;
+      width:100%;
+    }
+    .chartbox.small{
+      height: 195px;
+    }
+    .legendline{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      margin-top:8px;
+    }
+    .key{
+      display:flex;
+      align-items:center;
+      gap:7px;
+      color:var(--muted);
+      font-size:11px;
+      font-weight:700;
+    }
+    .swatch{
+      width:12px;height:12px;border-radius:3px;
+      border:1px solid rgba(255,255,255,.12);
+    }
+    .footerNote{
+      margin-top:6px;
+      font-size:11px;
+      color: var(--muted);
+      line-height:1.35;
+    }
+    /* Mobile */
+    @media (max-width: 420px){
+      .artifact{width:100vw}
+    }
+  </style>
+</head>
+<body>
+  <aside class="artifact">
+    <header>
+      <div class="title">
+        <h1>📊 Dashboard Executivo | Taranis Black</h1>
+        <p class="sub">Análise DRE trimestral • Projeção T1 e margens por linha</p>
+      </div>
+    </header>
+
+    <div class="grid">
+      <!-- 1) Barras agrupadas: Fretes e Logística (Orçado vs Realizado) -->
+      <section class="card">
+        <h2>
+          <span>Fretes e Logística (CD) — Orçado vs Realizado</span>
+          <span class="badge">Anomalias em T3 e T4 (Realizado)</span>
+        </h2>
+
+        <div class="chartbox">
+          <canvas id="fretesAgrupadas"></canvas>
+        </div>
+
+        <div class="legendline">
+          <div class="key"><span class="swatch" style="background:rgba(37,99,235,.9)"></span>Orçado (azul)</div>
+          <div class="key"><span class="swatch" style="background:rgba(148,163,184,.35)"></span>Realizado (cinza)</div>
+          <div class="key"><span class="swatch" style="background:rgba(239,68,68,.95)"></span>Realizado (T3/T4) — anomalia</div>
+        </div>
+      </section>
+
+      <!-- 2) Barras horizontais: Margem Bruta Média (%) -->
+      <section class="card">
+        <h2>
+          <span>Margem Bruta Média (%) por Linha de Produto</span>
+          <span class="badge badge-blue">Meta de eficiência</span>
+        </h2>
+
+        <div class="chartbox small">
+          <canvas id="margemBrutaHoriz"></canvas>
+        </div>
+        <div class="footerNote">Valores conforme linha: ErgoPro, SmartDesk e Silence.</div>
+      </section>
+
+      <!-- 3) Tabela visual: Projeção T1 -->
+      <section class="card">
+        <h2>
+          <span>Projeção T1 — Taranis Black</span>
+          <span class="badge">Badge vermelho = Ajuste</span>
+        </h2>
+
+        <div class="twrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:55%">Indicador</th>
+                <th style="width:45%">Valor (R$)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Observação:
+                   Como o Excel enviado traz Orçado/Realizado por trimestre, o painel usa a linha de DRE T1 Orçado:
+                   - Receita Bruta de Vendas (T1 Orçado): 10.700.000
+                   - CMV total (T1 Orçado): -3.600.000 + -850.000 = -4.450.000 (logo CMV como valor positivo: 4.450.000)
+                   - Fretes: usa “Despesas com Fretes e Logística de Entrega CD (T1 Orçado) = -520.000” com ajuste -20%
+                     => Fretes projetado = 520.000 * (1 - 0.20) = 416.000 (badge Ajuste)
+                   - PDD: “Provisão para Devedores Duvidosos (Inadimplência B2B) (T1 Orçado) = -95.000” estabilizada em 3%
+                     => 3% de Receita Bruta = 10.700.000 * 0.03 = 321.000 (badge Ajuste)
+              -->
+              <tr>
+                <td class="rowname">
+                  <span>Receita Bruta</span>
+                  <span class="muted">base</span>
+                </td>
+                <td class="val">10.700.000</td>
+              </tr>
+
+              <tr>
+                <td class="rowname">
+                  <span>CMV</span>
+                  <span class="muted">T1 Orçado</span>
+                </td>
+                <td class="val">4.450.000</td>
+              </tr>
+
+              <tr>
+                <td class="rowname">
+                  <span>Fretes</span>
+                  <span class="badge" style="padding:5px 10px;">Ajuste</span>
+                </td>
+                <td class="val" style="color:#fca5a5;">416.000</td>
+              </tr>
+
+              <tr>
+                <td class="rowname">
+                  <span>PDD</span>
+                  <span class="badge" style="padding:5px 10px;">Ajuste</span>
+                </td>
+                <td class="val" style="color:#fca5a5;">321.000</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="footerNote">
+          • Fretes com redução de 20% • PDD estabilizada em 3% da Receita Bruta (conforme regra do painel).
+        </div>
+      </section>
+    </div>
+  </aside>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script>
+    // Estilo global
+    Chart.defaults.color = "rgba(229,231,235,0.92)";
+    Chart.defaults.font.family = "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, Noto Sans";
+    Chart.defaults.font.size = 12;
+
+    const gridColor = "rgba(148,163,184,.22)";
+    const axisColor = "rgba(148,163,184,.40)";
+
+    // 1) Barras agrupadas Fretes e Logística (Orçado vs Realizado)
+    // Valores (Excel - linha: Despesas com Fretes e Logística de Entrega CD):
+    // T1 Orçado:  -520.000 ; T1 Realizado: -680.000
+    // T2 Orçado:  -560.000 ; T2 Realizado: -790.000
+    // T3 Orçado:  -620.000 ; T3 Realizado: -1.050.000  (anomalia)
+    // T4 Orçado:  -680.000 ; T4 Realizado: -1.220.000  (anomalia)
+    // Para gráfico de custos, exibimos valores absolutos (positivos).
+    const labels = ["T1","T2","T3","T4"];
+
+    const fretesOrcado = [520000, 560000, 620000, 680000];
+    const fretesRealizado = [680000, 790000, 1050000, 1220000];
+
+    const fretesRealColors = fretesRealizado.map((_,i)=> (i===2 || i===3) ? "rgba(239,68,68,.95)" : "rgba(148,163,184,.35)");
+
+    const ctx1 = document.getElementById("fretesAgrupadas").getContext("2d");
+    new Chart(ctx1, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [
+          {
+            label: "Orçado",
+            data: fretesOrcado,
+            backgroundColor: "rgba(37,99,235,.85)",
+            borderColor: "rgba(37,99,235,1)",
+            borderWidth: 1.2,
+            borderRadius: 8,
+            barThickness: 22
+          },
+          {
+            label: "Realizado",
+            data: fretesRealizado,
+            backgroundColor: fretesRealColors,
+            borderColor: "rgba(255,255,255,.15)",
+            borderWidth: 1.0,
+            borderRadius: 8,
+            barThickness: 22
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 450 },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => {
+                const v = ctx.raw;
+                const s = ctx.dataset.label;
+                return `${s}: R$ ${v.toLocaleString("pt-BR")}`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { display:false },
+            ticks: { color: "rgba(229,231,235,.9)" }
+          },
+          y: {
+            beginAtZero: true,
+            grid: { color: gridColor },
+            border: { color: axisColor },
+            ticks: {
+              callback: (value) => {
+                // compacta em "k" quando for grande
+                const n = Number(value);
+                if (n >= 1000000) return (n/1000000).toFixed(1) + "M";
+                if (n >= 1000) return (n/1000).toFixed(0) + "k";
+                return n;
+              }
+            }
+          }
+        }
+      }
+    });
+
+    // 2) Barras horizontais: Margem Bruta Média (%)
+    // ErgoPro 44.2, SmartDesk 38.5, Silence 52.0
+    const ctx2 = document.getElementById("margemBrutaHoriz").getContext("2d");
+    new Chart(ctx2, {
+      type: "bar",
+      data: {
+        labels: ["ErgoPro","SmartDesk","Silence"],
+        datasets: [{
+          label: "Margem Bruta Média (%)",
+          data: [44.2, 38.5, 52.0],
+          backgroundColor: [
+            "rgba(37,99,235,.85)",
+            "rgba(148,163,184,.38)",
+            "rgba(34,197,94,.45)"
+          ],
+          borderColor: [
+            "rgba(37,99,235,1)",
+            "rgba(148,163,184,.55)",
+            "rgba(34,197,94,.8)"
+          ],
+          borderWidth: 1.2,
+          borderRadius: 10
+        }]
+      },
+      options: {
+        indexAxis: "y",
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 450 },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => `Margem: ${ctx.raw.toFixed(1)}%`
+            }
+          }
+        },
+        scales: {
+          x: {
+            beginAtZero: true,
+            grid: { color: gridColor },
+            border: { color: axisColor },
+            ticks: {
+              callback: (val) => val + "%"
+            }
+          },
+          y: {
+            grid: { display:false },
+            border: { color: axisColor },
+            ticks: { color: "rgba(229,231,235,.92)", fontWeight: 800 }
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
